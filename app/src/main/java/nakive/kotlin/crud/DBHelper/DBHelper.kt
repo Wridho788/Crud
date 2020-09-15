@@ -1,5 +1,6 @@
 package nakive.kotlin.crud.DBHelper
 
+import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -36,5 +37,49 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null
             val selectQuery = "SELECT * FROM $TABLE_NAME"
             val db: SQLiteDatabase = this.writableDatabase
             val cursor = db.rawQuery(selectQuery, null)
+            if (cursor.moveToFirst()) {
+                do {
+                    val person = Person()
+                    person.id = cursor.getInt(cursor.getColumnIndex(COL_ID))
+                    person.name = cursor.getString(cursor.getColumnIndex(COL_NAME))
+                    person.email = cursor.getString(cursor.getColumnIndex(COL_EMAIL))
+                    lstPerson.add(person)
+                } while (cursor.moveToNext())
+            }
+            db.close()
+            return lstPerson
         }
+
+    fun addPerson(person: Person) {
+        val db: SQLiteDatabase = this.writableDatabase
+        val values = ContentValues()
+        values.put(COL_ID, person.id)
+        values.put(COL_NAME, person.name)
+        values.put(COL_EMAIL, person.email)
+
+        db.insert(TABLE_NAME, null, values)
+        db.close()
+
+    }
+
+    fun updatePerson(person: Person): Int {
+        val db: SQLiteDatabase = this.writableDatabase
+        val values = ContentValues()
+        values.put(COL_ID, person.id)
+        values.put(COL_NAME, person.name)
+        values.put(COL_EMAIL, person.email)
+
+        return db.update(TABLE_NAME, values, "$COL_ID=?", arrayOf(person.id.toString()))
+
+
+    }
+
+    fun deletePerson(person: Person) {
+        val db: SQLiteDatabase = this.writableDatabase
+
+        db.delete(TABLE_NAME, "$COL_ID=?", arrayOf(person.id.toString()))
+        db.close()
+
+
+    }
 }
